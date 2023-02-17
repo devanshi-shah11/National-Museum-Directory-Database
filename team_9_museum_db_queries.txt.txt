@@ -1,0 +1,70 @@
+## INFM733 - Team 9 - Final Project Queries
+## 1.List all the art museums in the state of California where the revenue exceeds 50k.
+USE museums;
+DROP VIEW IF EXISTS art_museum_CA;
+CREATE VIEW art_museum_CA AS 
+SELECT museums.museum_id, museums.museum_name, `type`.museum_type,  museums.revenue, addresses.state
+FROM museums
+INNER JOIN addresses USING(address_id)
+INNER JOIN museums.`museum type` USING (museum_id)
+INNER JOIN `type` USING (museum_type_id)
+WHERE addresses.state = "CA" and `type`.museum_type = "ART MUSEUM" and museums.revenue > 50000;
+ 
+
+## 2.Find the museum in the state of Ohio which has the highest income.
+USE museums;
+DROP VIEW IF EXISTS highest_incomeOH;
+CREATE VIEW highest_incomeOH AS 
+SELECT museum_id, museum_name, MAX(income) AS 'highest_income'
+FROM museums.museums
+INNER JOIN addresses USING(address_id)
+WHERE addresses.state = "OH"
+GROUP BY museum_id
+ORDER BY income DESC
+LIMIT 1;
+
+
+## 3. Find all the museums with more than one item, return all exhibits they are hosting(with dates and their items)
+use museums;
+drop view if exists exhibits_w_item;
+create view exhibits_w_item as
+select museum_name, exhibit_name, start_date, end_date, item_name, item_year, `Items`.description
+from `Museums`
+inner join `Exhibits` using(museum_id)
+inner join `Items in Exhibits` using(exhibit_id)
+inner join `Items` using(item_id)
+order by museum_name asc;
+
+## 4.Find the number of exhibits that each museum has had, if they have had at least one.
+USE museums;
+DROP VIEW IF EXISTS no_of_exhibits;
+CREATE VIEW no_of_exhibits AS 
+SELECT museum_id, museum_name, COUNT(exhibit_name) AS "number_of_exhibits", income, revenue
+FROM museums.museums
+INNER JOIN museums.exhibits USING (museum_id)
+GROUP BY museum_id
+ORDER BY COUNT(exhibit_name) desc;
+
+## 5. Rank the museum types from most popular to least popular(most members to least members)
+use museums;
+drop view if exists popular_museum_types;
+create view popular_museum_types as
+select count(member_id) as "Number of Members", favorite_museum_types
+from `Members`
+where favorite_museum_types != ""
+group by favorite_museum_types
+order by count(member_id) desc;
+
+## 6.Find all exhibits at Science and Technology museums after 2022
+use museums;
+drop view if exists museums.sci_tech_exhibits;
+create view sci_tech_exhibits as
+select museum_name, exhibit_name, exhibit_description, start_date, end_date
+from `Museums`
+inner join `Exhibits` using(museum_id)
+inner join `Museum Type` using(museum_id)
+inner join `Type` using(museum_type_id)
+where `Museum Type`.museum_type_id = 2 and
+(`Exhibits`.end_date > "2021-12-31 00:00:00" or `Exhibits`.end_date is null);
+ 
+ 
